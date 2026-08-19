@@ -16,9 +16,18 @@ object Encoder {
         val name = charsetName(display)
         return try {
             // ICU 优先，能处理 GBK/GB2312/Big5
-            charsetICU(name).encode(text).array().copyOf()
+            val ch = try {
+                CharsetICU.forNameICU(name)
+            } catch (e: Exception) {
+                null
+            }
+            if (ch != null) {
+                ch.encode(text).array().copyOf()
+            } else {
+                text.toByteArray(java.nio.charset.Charset.forName(name))
+            }
         } catch (e: Exception) {
-            // 回退到平台
+            // 最后回退 UTF-8
             text.toByteArray(Charsets.UTF_8)
         }
     }
@@ -27,17 +36,18 @@ object Encoder {
     fun decode(bytes: ByteArray, display: String): String {
         val name = charsetName(display)
         return try {
-            charsetICU(name).decode(java.nio.ByteBuffer.wrap(bytes)).toString()
-        } catch (e: Exception) {
-            try {
-                String(bytes, java.nio.charset.Charset.forName(name))
-            } catch (e2: Exception) {
-                String(bytes, Charsets.UTF_8)
+            val ch = try {
+                CharsetICU.forNameICU(name)
+            } catch (e: Exception) {
+                null
             }
+            if (ch != null) {
+                ch.decode(java.nio.ByteBuffer.wrap(bytes)).toString()
+            } else {
+                String(bytes, java.nio.charset.Charset.forName(name))
+            }
+        } catch (e: Exception) {
+            String(bytes, Charsets.UTF_8)
         }
-    }
-
-    private fun charsetICU(name: String): CharsetICU {
-        return com.ibm.icu.charset.Charset.forNameICU(name) as CharsetICU
     }
 }
