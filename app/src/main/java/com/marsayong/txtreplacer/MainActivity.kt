@@ -6,7 +6,6 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.text.method.ScrollingMovementMethod
 import android.view.Gravity
 import android.view.View
 import android.widget.*
@@ -62,15 +61,11 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btn_delete_library).setOnClickListener { onDeleteLibrary() }
         findViewById<Button>(R.id.btn_add_rule).setOnClickListener { addRuleRow() }
         findViewById<Button>(R.id.btn_open).setOnClickListener { openFile() }
+        findViewById<Button>(R.id.btn_clear_input).setOnClickListener { etInput.setText(""); toast("已清空输入"); tvStatus.text = "已清空输入" }
         findViewById<Button>(R.id.btn_replace).setOnClickListener { onReplace() }
         findViewById<Button>(R.id.btn_copy).setOnClickListener { onCopy() }
+        findViewById<Button>(R.id.btn_clear_output).setOnClickListener { etOutput.setText(""); toast("已清空结果"); tvStatus.text = "已清空结果" }
         findViewById<Button>(R.id.btn_save).setOnClickListener { onSave() }
-
-        // 让输入/结果框内部可上下滚动（单指拖动，无需依赖输入法光标翻页）
-        etInput.movementMethod = ScrollingMovementMethod()
-        etOutput.movementMethod = ScrollingMovementMethod()
-        etInput.isVerticalScrollBarEnabled = true
-        etOutput.isVerticalScrollBarEnabled = true
 
         // 库切换
         spinnerLibrary.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
