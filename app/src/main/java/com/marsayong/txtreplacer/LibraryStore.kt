@@ -40,19 +40,13 @@ object LibraryStore {
         prefs.edit().putInt(KEY_CURRENT, index).apply()
     }
 
-    /** 首次启动的示例库 */
+    /** 首次启动：仅一个空白库，名字留空、无规则，用户自行添加 */
     private fun defaultLibraries(): MutableList<RuleLibrary> {
         return mutableListOf(
             RuleLibrary(
-                name = "戒色1号库",
-                rules = mutableListOf(
-                    Rule("jiese", "戒色"),
-                    Rule("mogui", "魔鬼"),
-                    Rule("weisuo", "猥琐"),
-                    Rule("xieyin", "邪淫")
-                )
-            ),
-            RuleLibrary(name = "空白示例库", rules = mutableListOf())
+                name = "",
+                rules = mutableListOf()
+            )
         )
     }
 }

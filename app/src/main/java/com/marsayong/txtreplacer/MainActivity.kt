@@ -6,12 +6,11 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.text.method.ScrollingMovementMethod
 import android.view.Gravity
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import java.io.File
-import java.io.FileOutputStream
 
 class MainActivity : AppCompatActivity() {
 
@@ -66,6 +65,12 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btn_replace).setOnClickListener { onReplace() }
         findViewById<Button>(R.id.btn_copy).setOnClickListener { onCopy() }
         findViewById<Button>(R.id.btn_save).setOnClickListener { onSave() }
+
+        // 让输入/结果框内部可上下滚动（单指拖动，无需依赖输入法光标翻页）
+        etInput.movementMethod = ScrollingMovementMethod()
+        etOutput.movementMethod = ScrollingMovementMethod()
+        etInput.isVerticalScrollBarEnabled = true
+        etOutput.isVerticalScrollBarEnabled = true
 
         // 库切换
         spinnerLibrary.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -307,9 +312,40 @@ class MainActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 toast("读取失败: ${e.message}")
             }
+        } else if (requestCode == saveRequestCode && resultCode == RESULT_OK && data?.data != null) {
+            val uri = data.data!!
+            val out = etOutput.text.toString()
+            val encoding = pendingSaveEncoding ?: "UTF-8"
+            try {
+                contentResolver.openOutputStream(uri)?.use { os ->
+                    os.write(Encoder.encode(out, encoding))
+                    os.flush()
+                }
+                // 拿文件名（若有）用于提示；SAF 不暴露绝对路径，这里只给友好反馈
+                var display = "已保存（$encoding）"
+                try {
+                    val m = contentResolver.query(
+                        uri, arrayOf(android.provider.OpenableColumns.DISPLAY_NAME), null, null, null
+                    )
+                    m?.use { cur ->
+                        if (cur.moveToFirst()) {
+                            val name = cur.getString(0)
+                            display = "已保存：$name（$encoding）"
+                        }
+                    }
+                } catch (_: Exception) {}
+                tvStatus.text = "✅ $display"
+                toast("保存成功（$encoding）")
+            } catch (e: Exception) {
+                toast("保存失败: ${e.message}")
+            }
         }
     }
 
+
+    // ============ 保存文件（SAF，用户自选路径，默认 Download，免 root） ============
+    private var saveRequestCode = 1002
+    private var pendingSaveEncoding: String? = null
 
     private fun onSave() {
         val out = etOutput.text.toString()
@@ -321,20 +357,23 @@ class MainActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle("保存文件名")
             .setView(nameInput)
-            .setPositiveButton("保存") { _, _ ->
+            .setPositiveButton("下一步") { _, _ ->
                 val fileName = nameInput.text.toString().trim().ifEmpty { "替换结果.txt" }
-                val encoding = spinnerOut.selectedItem.toString()
+                pendingSaveEncoding = spinnerOut.selectedItem.toString()
+                // 系统文件选择器：用户自己选保存位置（默认 Download 等可写目录，免 root）
+                val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                    addCategory(Intent.CATEGORY_OPENABLE)
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_TITLE, fileName)
+                    addFlags(
+                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION or
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    )
+                }
                 try {
-                    // 存到应用外部 files/ 下（无需存储权限）
-                    val dir = File(getExternalFilesDir(null), "TxtReplacer")
-                    if (!dir.exists()) dir.mkdirs()
-                    val file = File(dir, fileName)
-                    val bytes = Encoder.encode(out, encoding)
-                    FileOutputStream(file).use { it.write(bytes) }
-                    toast("已保存：$file")
-                    tvStatus.text = "已保存到: $file（$encoding）"
+                    startActivityForResult(intent, saveRequestCode)
                 } catch (e: Exception) {
-                    toast("保存失败: ${e.message}")
+                    toast("无法打开保存选择器")
                 }
             }
             .setNegativeButton("取消", null)
