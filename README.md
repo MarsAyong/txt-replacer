@@ -22,23 +22,7 @@
 ### 方式一：直接安装（最简单）
 1. 下载 APK 到手机
 2. 打开时若提示「未知来源/允许安装未知应用」→ 允许
-3. 若仍提示「未受信任」或无法安装，用「方式二」自行签名
 
-### 方式二：自行签名后安装（推荐，可解决绝大多数安装失败）
-APK 未签名，部分手机（尤其国内 ROM）会拦截。用电脑给 APK 签名后再安装：
-
-1. 需要 Java 环境（JDK 8 及以上）
-2. 生成签名文件（只需一次）：
-   ```bash
-   keytool -genkey -v -keystore mykey.jks -alias myalias -keyalg RSA -keysize 2048 -validity 10000
-   ```
-3. 对 APK 签名（用 apksigner，位于 Android SDK build-tools 目录）：
-   ```bash
-   apksigner sign --ks mykey.jks --out app-signed.apk app-unsigned.apk
-   # 或旧版 jarsigner：
-   # jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore mykey.jks app.apk myalias
-   ```
-4. 安装 `app-signed.apk` 即可
 
 ## 📦 下载
 
