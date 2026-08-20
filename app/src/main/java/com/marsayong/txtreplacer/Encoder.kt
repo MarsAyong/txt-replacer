@@ -3,7 +3,7 @@ package com.marsayong.txtreplacer
 import com.ibm.icu.charset.CharsetICU
 
 /**
- * 缂栫爜宸ュ叿锛氫紭鍏堢敤 ICU4J锛堟敮鎸?GBK/GB2312/Big5锛夛紝鍥為€€鍒板钩鍙?Charset锛圲TF-8 绛夛級
+ * 编码工具：优先用 ICU4J（支持 GBK/GB2312/Big5），回退到平台 Charset（UTF-8 等）
  */
 object Encoder {
     fun charsetName(display: String): String = when (display) {
@@ -11,7 +11,7 @@ object Encoder {
         else -> display
     }
 
-    /** 鎶婁竴涓瓧绗︿覆鎸夋寚瀹氱紪鐮佺紪鐮佹垚瀛楄妭 */
+    /** 把一个字符串按指定编码编码成字节 */
     fun encode(text: String, display: String): ByteArray {
         val name = charsetName(display)
         return try {
@@ -32,7 +32,7 @@ object Encoder {
         }
     }
 
-    /** 鎶婂瓧鑺傛寜鎸囧畾缂栫爜瑙ｇ爜鎴愬瓧绗︿覆 */
+    /** 把字节按指定编码解码成字符串 */
     fun decode(bytes: ByteArray, display: String): String {
         val name = charsetName(display)
         return try {
