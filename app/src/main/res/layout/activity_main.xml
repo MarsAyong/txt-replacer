@@ -52,7 +52,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="✏️ 重命名"
+                    android:text="✏️ 改名"
                     android:textAllCaps="false"
                     style="@style/Widget.Material3.Button.TonalButton" />
 
@@ -103,7 +103,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="18dp"
-                android:text="📝 输入文本（粘贴或编辑）"
+                android:text="📝 输入文本"
                 android:textSize="17sp"
                 android:textStyle="bold"
                 android:textColor="#1E293B" />
@@ -119,7 +119,16 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="📂 从文件读取"
+                    android:text="📂 本地"
+                    android:textAllCaps="false"
+                    style="@style/Widget.Material3.Button.TonalButton" />
+
+                <Button
+                    android:id="@+id/btn_paste_input"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="📋 粘贴"
                     android:textAllCaps="false"
                     style="@style/Widget.Material3.Button.TonalButton" />
 
@@ -128,19 +137,20 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="🧹 清空输入"
+                    android:text="🧹 清空"
                     android:textAllCaps="false"
                     style="@style/Widget.Material3.Button.TonalButton" />
             </LinearLayout>
 
-            <!-- 输入编辑框：外层 ScrollView 提供独立滚动区（框内手指滑动，不带动整个界面），并保持长按选中 -->
+            <!-- 输入编辑框：外层 ScrollView 提供独立滚动区（手指上下滑查看，右侧滚动条），EditText 高度自适应内容、不拦截滚动，因此长按选中/全选均正常 -->
             <ScrollView
                 android:id="@+id/scroll_input"
                 android:layout_width="match_parent"
                 android:layout_height="320dp"
                 android:layout_marginTop="6dp"
                 android:background="@drawable/bg_input"
-                android:fillViewport="true">
+                android:fillViewport="true"
+                android:scrollbars="vertical">
 
                 <EditText
                     android:id="@+id/et_input"
@@ -210,14 +220,15 @@
                 android:textStyle="bold"
                 android:textColor="#1E293B" />
 
-            <!-- 结果编辑框：同输入框，独立滚动 + 可选中 -->
+            <!-- 结果编辑框：同输入框，外层 ScrollView 独立滚动，EditText 保留长按选中/全选 -->
             <ScrollView
                 android:id="@+id/scroll_output"
                 android:layout_width="match_parent"
                 android:layout_height="320dp"
                 android:layout_marginTop="6dp"
                 android:background="@drawable/bg_input"
-                android:fillViewport="true">
+                android:fillViewport="true"
+                android:scrollbars="vertical">
 
                 <EditText
                     android:id="@+id/et_output"
@@ -252,7 +263,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="🧹 清空结果"
+                    android:text="🧹 清空"
                     android:textAllCaps="false"
                     style="@style/Widget.Material3.Button.TonalButton" />
 

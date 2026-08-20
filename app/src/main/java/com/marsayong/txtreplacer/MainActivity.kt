@@ -61,6 +61,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btn_delete_library).setOnClickListener { onDeleteLibrary() }
         findViewById<Button>(R.id.btn_add_rule).setOnClickListener { addRuleRow() }
         findViewById<Button>(R.id.btn_open).setOnClickListener { openFile() }
+        findViewById<Button>(R.id.btn_paste_input).setOnClickListener { onPasteInput() }
         findViewById<Button>(R.id.btn_clear_input).setOnClickListener { etInput.setText(""); toast("已清空输入"); tvStatus.text = "已清空输入" }
         findViewById<Button>(R.id.btn_replace).setOnClickListener { onReplace() }
         findViewById<Button>(R.id.btn_copy).setOnClickListener { onCopy() }
@@ -101,7 +102,7 @@ class MainActivity : AppCompatActivity() {
     private fun persist() = LibraryStore.saveLibraries(this, libraries)
 
     private fun onNewLibrary() {
-        val input = EditText(this).apply { hint = "例如：戒色1号库" }
+        val input = EditText(this).apply { hint = "给这个库起个名字" }
         AlertDialog.Builder(this)
             .setTitle("新建替换库")
             .setView(input)
@@ -260,13 +261,15 @@ class MainActivity : AppCompatActivity() {
         if (lib.rules.none { it.from.isNotEmpty() }) { toast("当前库没有替换规则"); return }
 
         var result = src
-        lib.rules.forEach { r ->
-            if (r.from.isNotEmpty()) {
-                result = result.replace(r.from, r.to)
-            }
+        // 优先替换字数多的规则：按 from 长度降序执行，避免"xiejing→泄精"被"xie→邪"先吃掉变成"邪jing"
+        val sortedRules = lib.rules
+            .filter { it.from.isNotEmpty() }
+            .sortedByDescending { it.from.length }
+        sortedRules.forEach { r ->
+            result = result.replace(r.from, r.to)
         }
         etOutput.setText(result)
-        tvStatus.text = "✅ 替换完成：共应用 ${lib.rules.count { it.from.isNotEmpty() }} 条规则（${lib.name}）"
+        tvStatus.text = "✅ 替换完成：共应用 ${sortedRules.size} 条规则（${lib.name}）"
     }
 
     private fun onCopy() {
@@ -275,6 +278,17 @@ class MainActivity : AppCompatActivity() {
         val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         cm.setPrimaryClip(ClipData.newPlainText("result", out))
         toast("已复制")
+    }
+
+    // ============ 粘贴到输入框 ============
+    private fun onPasteInput() {
+        val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = cm.primaryClip
+        if (clip == null || clip.itemCount == 0) { toast("剪贴板为空"); return }
+        val text = clip.getItemAt(0).coerceToText(this)?.toString() ?: ""
+        if (text.isEmpty()) { toast("剪贴板为空"); return }
+        etInput.setText(text)
+        tvStatus.text = "📋 已粘贴剪贴板内容"
     }
 
     // ============ 打开文件（SAF，按所选输入编码解码） ============
